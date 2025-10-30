@@ -24,6 +24,10 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - `GET /api/books/stats/library` – aggregate library stats
 - `GET /api/books/stats/author/:id` – author specific stats
 
+### Middleware
+- Request ID: every response includes `x-request-id` (respects incoming header)
+- CORS: allows requests from provided Origin and supports preflight
+
 ## Develop
 
 1) Install Bun if not already installed.
