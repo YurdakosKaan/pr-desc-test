@@ -1,9 +1,19 @@
 import { Router, Request, Response } from "express";
-import { authorStats, bookSchema, createBook, listBooks, removeBook, stats, updateBook } from "../services/libraryService";
+import { authorStats, bookSchema, createBook, listBooks, removeBook, searchBooks, stats, updateBook } from "../services/libraryService";
 
 export const booksRouter = Router();
 
-booksRouter.get("/", (_req: Request, res: Response) => {
+booksRouter.get("/", (req: Request, res: Response) => {
+  const { q, genre } = req.query as Record<string, string | undefined>;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const offset = req.query.offset ? Number(req.query.offset) : undefined;
+  const sort = (req.query.sort as any) as "title" | "year" | "rating" | undefined;
+  const order = (req.query.order as any) as "asc" | "desc" | undefined;
+
+  if (q || genre || limit !== undefined || offset !== undefined || sort || order) {
+    const { items, total } = searchBooks({ q: q ?? undefined, genre: genre ?? undefined, limit, offset, sort, order });
+    return res.json({ total, items });
+  }
   res.json({ books: listBooks() });
 });
 
