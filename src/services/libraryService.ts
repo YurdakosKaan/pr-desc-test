@@ -48,6 +48,41 @@ export function listBooks(): Book[] {
   return [...books];
 }
 
+export type BookSearchParams = {
+  q?: string;
+  genre?: string;
+  limit?: number;
+  offset?: number;
+  sort?: "title" | "year" | "rating";
+  order?: "asc" | "desc";
+};
+
+export function searchBooks(params: BookSearchParams): { items: Book[]; total: number } {
+  const { q, genre, limit = 20, offset = 0, sort = "title", order = "asc" } = params;
+
+  let result = listBooks();
+  if (q && q.trim() !== "") {
+    const needle = q.toLowerCase();
+    result = result.filter(b => b.title.toLowerCase().includes(needle));
+  }
+  if (genre && genre.trim() !== "") {
+    result = result.filter(b => b.genres.some(g => g.toLowerCase() === genre.toLowerCase()));
+  }
+
+  const dir = order === "desc" ? -1 : 1;
+  result = result.sort((a, b) => {
+    const av = (a as any)[sort] ?? 0;
+    const bv = (b as any)[sort] ?? 0;
+    if (av < bv) return -1 * dir;
+    if (av > bv) return 1 * dir;
+    return 0;
+  });
+
+  const total = result.length;
+  const items = result.slice(offset, offset + limit);
+  return { items, total };
+}
+
 export function updateBook(id: string, update: Partial<Book>): Book {
   const idx = books.findIndex(b => b.id === id);
   if (idx === -1) throw new Error("Book not found");

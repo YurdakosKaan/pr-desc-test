@@ -17,6 +17,7 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - `POST /api/authors` – create author `{ name, country? }`
 - `GET /api/authors/:id` – get author
 - `GET /api/books` – list books
+  - Supports search and pagination: `q`, `genre`, `limit`, `offset`, `sort` (title|year|rating), `order` (asc|desc)
 - `POST /api/books` – create book `{ title, authorId, year?, genres[], rating? }`
 - `PATCH /api/books/:id` – update book
 - `DELETE /api/books/:id` – remove book
