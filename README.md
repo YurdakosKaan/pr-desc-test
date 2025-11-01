@@ -28,6 +28,7 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 ### Middleware
 - Request ID: every response includes `x-request-id` (respects incoming header)
 - CORS: allows requests from provided Origin and supports preflight
+- Rate Limiting: sliding window rate limiter (default: 100 req/min per IP). Returns 429 with `Retry-After` and `X-RateLimit-*` headers when exceeded
 
 ## Develop
 
@@ -51,6 +52,12 @@ Data is persisted to `data/library.json` by default. Set `STORAGE_PATH` env var 
 STORAGE_PATH=/path/to/custom.json bun run dev
 ```
 
+Rate limiting is configurable via env vars (default: 100 requests per 60 seconds):
+
+```bash
+RATE_LIMIT_MAX=200 RATE_LIMIT_WINDOW_MS=30000 bun run dev
+```
+
 3) Run tests:
 
 ```bash
@@ -62,7 +69,6 @@ bun run test
 - Introduce `reviews` with text sentiment analysis utility.
 - Add OpenAPI spec and generated client.
 - Create a Dockerfile and GitHub Actions workflow.
-- Add rate limiting middleware.
 
 Each idea is sizable enough to produce meaningful diffs for PR description summarization.
 
