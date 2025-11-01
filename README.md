@@ -22,8 +22,11 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - `POST /api/books` – create book `{ title, authorId, year?, genres[], rating? }`
 - `PATCH /api/books/:id` – update book
 - `DELETE /api/books/:id` – remove book
-- `GET /api/books/stats/library` – aggregate library stats
+- `GET /api/books/stats/library` – aggregate library stats (includes review count)
 - `GET /api/books/stats/author/:id` – author specific stats
+- `GET /api/reviews/book/:bookId` – get all reviews for a book (sorted by newest first)
+- `POST /api/reviews` – create review `{ bookId, reviewerName, rating (1-5), comment }`
+- `DELETE /api/reviews/:id` – delete a review
 
 ### Middleware
 - Request ID: every response includes `x-request-id` (respects incoming header)

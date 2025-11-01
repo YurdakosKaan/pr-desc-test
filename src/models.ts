@@ -13,9 +13,19 @@ export type Book = {
   rating?: number; // 1..5
 };
 
+export type Review = {
+  id: string;
+  bookId: string;
+  reviewerName: string;
+  rating: number; // 1..5
+  comment: string;
+  createdAt: string; // ISO timestamp
+};
+
 export type LibrarySnapshot = {
   authors: Author[];
   books: Book[];
+  reviews: Review[];
 };
 
 

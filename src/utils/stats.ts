@@ -38,11 +38,25 @@ export function computeLibraryStats(snapshot: LibrarySnapshot) {
   }
 
   return {
-    totals: { authors: authors.length, books: books.length },
+    totals: { 
+      authors: authors.length, 
+      books: books.length,
+      reviews: snapshot.reviews?.length ?? 0
+    },
     topAuthors,
     genres: Array.from(genreCounts.entries())
       .sort((a, b) => b[1] - a[1])
       .map(([genre, count]) => ({ genre, count }))
+  };
+}
+
+export function computeBookStats(book: Book, reviews: any[]) {
+  const bookReviews = reviews.filter(r => r.bookId === book.id);
+  const avgRating = average(bookReviews.map(r => r.rating));
+  return {
+    book,
+    reviewCount: bookReviews.length,
+    averageRating: avgRating,
   };
 }
 

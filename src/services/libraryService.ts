@@ -2,6 +2,7 @@ import { Author, Book, LibrarySnapshot } from "../models";
 import { computeAuthorStats, computeLibraryStats } from "../utils/stats";
 import { z } from "zod";
 import { FileStorage } from "../storage/fileStorage";
+import { getReviewsSnapshot, setReviewsSnapshot } from "./reviewService";
 
 // File-backed storage. Loaded on initialization.
 let storage: FileStorage;
@@ -11,13 +12,22 @@ let books: Book[] = [];
 export async function initializeStorage(path?: string): Promise<void> {
   storage = new FileStorage(path);
   const snapshot = await storage.load();
-  authors = snapshot.authors;
-  books = snapshot.books;
+  authors = snapshot.authors || [];
+  books = snapshot.books || [];
+  setReviewsSnapshot(snapshot.reviews || []);
 }
 
 async function persist(): Promise<void> {
   if (!storage) return;
-  await storage.save({ authors: [...authors], books: [...books] });
+  await storage.save({ 
+    authors: [...authors], 
+    books: [...books],
+    reviews: getReviewsSnapshot()
+  });
+}
+
+export async function persistReviews(): Promise<void> {
+  await persist();
 }
 
 export const authorSchema = z.object({
@@ -62,6 +72,10 @@ export async function createBook(input: z.infer<typeof bookSchema>): Promise<Boo
 
 export function listBooks(): Book[] {
   return [...books];
+}
+
+export function getBook(id: string): Book | undefined {
+  return books.find(b => b.id === id);
 }
 
 export type BookSearchParams = {
@@ -117,7 +131,7 @@ export async function removeBook(id: string): Promise<boolean> {
 }
 
 export function snapshot(): LibrarySnapshot {
-  return { authors: listAuthors(), books: listBooks() };
+  return { authors: listAuthors(), books: listBooks(), reviews: getReviewsSnapshot() };
 }
 
 export function stats() {

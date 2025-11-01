@@ -1,6 +1,7 @@
 import express, { Express, Request, Response } from "express";
 import { booksRouter } from "./routes/books";
 import { authorsRouter } from "./routes/authors";
+import { reviewsRouter } from "./routes/reviews";
 import { requestLogger } from "./middleware/logger";
 import { errorMiddleware } from "./middleware/error";
 import { cors } from "./middleware/cors";
@@ -26,6 +27,7 @@ export async function startServer(port: number): Promise<{ app: Express; server:
 
   app.use("/api/books", booksRouter);
   app.use("/api/authors", authorsRouter);
+  app.use("/api/reviews", reviewsRouter);
 
   const server = await new Promise<ReturnType<Express["listen"]>>((resolve) => {
     const s = app.listen(port, () => resolve(s));
