@@ -22,8 +22,11 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - `POST /api/books` – create book `{ title, authorId, year?, genres[], rating? }`
 - `PATCH /api/books/:id` – update book
 - `DELETE /api/books/:id` – remove book
-- `GET /api/books/stats/library` – aggregate library stats
+- `GET /api/books/stats/library` – aggregate library stats (includes review count)
 - `GET /api/books/stats/author/:id` – author specific stats
+- `GET /api/reviews/book/:bookId` – get all reviews for a book (sorted by newest first)
+- `POST /api/reviews` – create review `{ bookId, reviewerName, rating (1-5), comment }`
+- `DELETE /api/reviews/:id` – delete a review
 
 ### Middleware
 - Request ID: every response includes `x-request-id` (respects incoming header)
@@ -64,11 +67,37 @@ RATE_LIMIT_MAX=200 RATE_LIMIT_WINDOW_MS=30000 bun run dev
 bun run test
 ```
 
+## Docker
+
+Build and run with Docker:
+
+```bash
+docker build -t pr-desc-test-service .
+docker run -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  -e PORT=3000 \
+  -e STORAGE_PATH=/app/data/library.json \
+  pr-desc-test-service
+```
+
+Or using Docker Compose:
+
+```bash
+docker-compose up
+```
+
+See `docker-compose.yml` for configuration.
+
+## CI/CD
+
+GitHub Actions workflow runs tests on push and pull requests to `main` and `develop` branches.
+
+See `.github/workflows/ci.yml` for configuration.
+
 ## Good PR ideas (to trigger summarization)
 
 - Introduce `reviews` with text sentiment analysis utility.
 - Add OpenAPI spec and generated client.
-- Create a Dockerfile and GitHub Actions workflow.
 
 Each idea is sizable enough to produce meaningful diffs for PR description summarization.
 
