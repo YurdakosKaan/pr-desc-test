@@ -1,10 +1,24 @@
 import { Author, Book, LibrarySnapshot } from "../models";
 import { computeAuthorStats, computeLibraryStats } from "../utils/stats";
 import { z } from "zod";
+import { FileStorage } from "../storage/fileStorage";
 
-// Simple in-memory store. Good enough for testing and PRs.
-const authors: Author[] = [];
-const books: Book[] = [];
+// File-backed storage. Loaded on initialization.
+let storage: FileStorage;
+let authors: Author[] = [];
+let books: Book[] = [];
+
+export async function initializeStorage(path?: string): Promise<void> {
+  storage = new FileStorage(path);
+  const snapshot = await storage.load();
+  authors = snapshot.authors;
+  books = snapshot.books;
+}
+
+async function persist(): Promise<void> {
+  if (!storage) return;
+  await storage.save({ authors: [...authors], books: [...books] });
+}
 
 export const authorSchema = z.object({
   name: z.string().min(2),
@@ -19,10 +33,11 @@ export const bookSchema = z.object({
   rating: z.number().min(1).max(5).optional()
 });
 
-export function createAuthor(input: z.infer<typeof authorSchema>): Author {
+export async function createAuthor(input: z.infer<typeof authorSchema>): Promise<Author> {
   const id = crypto.randomUUID();
   const author: Author = { id, ...input };
   authors.push(author);
+  await persist();
   return author;
 }
 
@@ -34,13 +49,14 @@ export function getAuthor(id: string): Author | undefined {
   return authors.find(a => a.id === id);
 }
 
-export function createBook(input: z.infer<typeof bookSchema>): Book {
+export async function createBook(input: z.infer<typeof bookSchema>): Promise<Book> {
   if (!getAuthor(input.authorId)) {
     throw new Error("Author not found");
   }
   const id = crypto.randomUUID();
   const book: Book = { id, ...input, genres: input.genres ?? [] };
   books.push(book);
+  await persist();
   return book;
 }
 
@@ -83,18 +99,20 @@ export function searchBooks(params: BookSearchParams): { items: Book[]; total: n
   return { items, total };
 }
 
-export function updateBook(id: string, update: Partial<Book>): Book {
+export async function updateBook(id: string, update: Partial<Book>): Promise<Book> {
   const idx = books.findIndex(b => b.id === id);
   if (idx === -1) throw new Error("Book not found");
   const updated: Book = { ...books[idx], ...update };
   books[idx] = updated;
+  await persist();
   return updated;
 }
 
-export function removeBook(id: string): boolean {
+export async function removeBook(id: string): Promise<boolean> {
   const idx = books.findIndex(b => b.id === id);
   if (idx === -1) return false;
   books.splice(idx, 1);
+  await persist();
   return true;
 }
 

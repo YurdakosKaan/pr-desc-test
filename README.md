@@ -8,6 +8,7 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - Express HTTP server
 - TypeScript
 - zod for validation
+- JSON file-based persistence
 - Bun test
 
 ## Endpoints
@@ -23,6 +24,10 @@ Small Bun + Express TypeScript service with non‑trivial structure so you can o
 - `DELETE /api/books/:id` – remove book
 - `GET /api/books/stats/library` – aggregate library stats
 - `GET /api/books/stats/author/:id` – author specific stats
+
+### Middleware
+- Request ID: every response includes `x-request-id` (respects incoming header)
+- CORS: allows requests from provided Origin and supports preflight
 
 ## Develop
 
@@ -40,6 +45,12 @@ bun run dev
 # -> http://localhost:3000/health
 ```
 
+Data is persisted to `data/library.json` by default. Set `STORAGE_PATH` env var to customize:
+
+```bash
+STORAGE_PATH=/path/to/custom.json bun run dev
+```
+
 3) Run tests:
 
 ```bash
@@ -48,14 +59,10 @@ bun run test
 
 ## Good PR ideas (to trigger summarization)
 
-- Add persistence layer (file or SQLite) instead of in‑memory store.
-- Implement pagination and sorting for `GET /api/books`.
-- Add search by `title` and `genre` with query params.
 - Introduce `reviews` with text sentiment analysis utility.
 - Add OpenAPI spec and generated client.
 - Create a Dockerfile and GitHub Actions workflow.
-- Improve validation and error format, add middleware.
-- Add rate limiting or request logging middleware.
+- Add rate limiting middleware.
 
 Each idea is sizable enough to produce meaningful diffs for PR description summarization.
 

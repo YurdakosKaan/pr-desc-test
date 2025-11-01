@@ -3,11 +3,15 @@ import { booksRouter } from "./routes/books";
 import { authorsRouter } from "./routes/authors";
 import { requestLogger } from "./middleware/logger";
 import { errorMiddleware } from "./middleware/error";
+import { cors } from "./middleware/cors";
+import { requestId } from "./middleware/requestId";
 
 export async function startServer(port: number): Promise<{ app: Express; server: ReturnType<Express["listen"]>; port: number }>
 {
   const app = express();
   app.use(express.json({ limit: "1mb" }));
+  app.use(requestId);
+  app.use(cors());
   app.use(requestLogger);
 
   app.get("/health", (_req: Request, res: Response) => {

@@ -18,13 +18,13 @@ booksRouter.get("/", (req: Request, res: Response) => {
   res.json({ books: listBooks() });
 });
 
-booksRouter.post("/", (req: Request, res: Response, next: NextFunction) => {
+booksRouter.post("/", async (req: Request, res: Response, next: NextFunction) => {
   const parse = bookSchema.safeParse(req.body);
   if (!parse.success) {
     return next(new AppError(400, "Invalid request body", "validation_error", parse.error.flatten()));
   }
   try {
-    const book = createBook(parse.data);
+    const book = await createBook(parse.data);
     res.status(201).json(book);
   } catch (e) {
     if (String(e).includes("Author not found")) return next(new AppError(404, "Author not found", "not_found"));
@@ -32,17 +32,17 @@ booksRouter.post("/", (req: Request, res: Response, next: NextFunction) => {
   }
 });
 
-booksRouter.patch("/:id", (req: Request, res: Response, next: NextFunction) => {
+booksRouter.patch("/:id", async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const updated = updateBook(req.params.id, req.body ?? {});
+    const updated = await updateBook(req.params.id, req.body ?? {});
     res.json(updated);
   } catch (e) {
     next(new AppError(404, "Book not found", "not_found"));
   }
 });
 
-booksRouter.delete("/:id", (req: Request, res: Response) => {
-  const ok = removeBook(req.params.id);
+booksRouter.delete("/:id", async (req: Request, res: Response) => {
+  const ok = await removeBook(req.params.id);
   res.json({ ok });
 });
 
