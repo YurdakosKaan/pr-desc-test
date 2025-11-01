@@ -64,11 +64,37 @@ RATE_LIMIT_MAX=200 RATE_LIMIT_WINDOW_MS=30000 bun run dev
 bun run test
 ```
 
+## Docker
+
+Build and run with Docker:
+
+```bash
+docker build -t pr-desc-test-service .
+docker run -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  -e PORT=3000 \
+  -e STORAGE_PATH=/app/data/library.json \
+  pr-desc-test-service
+```
+
+Or using Docker Compose:
+
+```bash
+docker-compose up
+```
+
+See `docker-compose.yml` for configuration.
+
+## CI/CD
+
+GitHub Actions workflow runs tests on push and pull requests to `main` and `develop` branches.
+
+See `.github/workflows/ci.yml` for configuration.
+
 ## Good PR ideas (to trigger summarization)
 
 - Introduce `reviews` with text sentiment analysis utility.
 - Add OpenAPI spec and generated client.
-- Create a Dockerfile and GitHub Actions workflow.
 
 Each idea is sizable enough to produce meaningful diffs for PR description summarization.
 
