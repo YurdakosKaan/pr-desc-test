@@ -1,6 +1,8 @@
-import { describe, expect, it } from "bun:test";
+import { afterAll, beforeAll, describe, expect, it } from "bun:test";
 import { average, topN } from "../src/utils/stats";
-import { createAuthor, createBook, searchBooks, stats } from "../src/services/libraryService";
+import { createAuthor, createBook, initializeStorage, searchBooks, stats } from "../src/services/libraryService";
+import { rm } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 describe("utils/stats", () => {
   it("computes average with rounding", () => {
@@ -17,12 +19,24 @@ describe("utils/stats", () => {
 });
 
 describe("library service", () => {
-  it("creates authors, books and computes stats", () => {
-    const a1 = createAuthor({ name: "Alice" });
-    const a2 = createAuthor({ name: "Bob" });
-    createBook({ title: "A", authorId: a1.id, genres: ["sci-fi"], rating: 5 });
-    createBook({ title: "B", authorId: a1.id, genres: ["sci-fi"], rating: 4, year: 2020 });
-    createBook({ title: "C", authorId: a2.id, genres: ["fantasy"], rating: 3, year: 2019 });
+  const testStoragePath = "data/test-library.json";
+
+  beforeAll(async () => {
+    await initializeStorage(testStoragePath);
+  });
+
+  afterAll(async () => {
+    if (existsSync(testStoragePath)) {
+      await rm(testStoragePath, { force: true });
+    }
+  });
+
+  it("creates authors, books and computes stats", async () => {
+    const a1 = await createAuthor({ name: "Alice" });
+    const a2 = await createAuthor({ name: "Bob" });
+    await createBook({ title: "A", authorId: a1.id, genres: ["sci-fi"], rating: 5 });
+    await createBook({ title: "B", authorId: a1.id, genres: ["sci-fi"], rating: 4, year: 2020 });
+    await createBook({ title: "C", authorId: a2.id, genres: ["fantasy"], rating: 3, year: 2019 });
 
     const s = stats();
     expect(s.totals.books).toBe(3);
@@ -45,6 +59,19 @@ describe("library service", () => {
     const paged = searchBooks({ limit: 1, offset: 1, sort: "title" });
     expect(paged.total).toBeGreaterThanOrEqual(3);
     expect(paged.items.length).toBe(1);
+  });
+
+  it("persists data across storage reloads", async () => {
+    const a = await createAuthor({ name: "Test Author" });
+    const b = await createBook({ title: "Test Book", authorId: a.id, genres: ["test"] });
+    expect(b.title).toBe("Test Book");
+
+    // Reload storage
+    await initializeStorage(testStoragePath);
+    const authors = stats().totals.authors;
+    const books = stats().totals.books;
+    expect(authors).toBeGreaterThanOrEqual(1);
+    expect(books).toBeGreaterThanOrEqual(1);
   });
 });
 
